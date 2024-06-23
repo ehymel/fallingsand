@@ -7,8 +7,6 @@ function setup() {
     cols = width / w;
     rows = height / w;
     grid = make2DArray(cols, rows);
-
-    grid[20][20] = 1;
 }
 
 function draw() {
@@ -33,7 +31,7 @@ function draw() {
                 let belowA, belowB;
                 let dir = random([-1, 1]);
 
-                if (i + dir > 0 && i - dir > 0 && i + dir < cols - 1 && i - dir < cols -1) {
+                if (i + dir >= 0 && i - dir >= 0 && i + dir <= cols - 1 && i - dir <= cols -1) {
                     belowA = grid[i + dir][j + 1];
                     belowB = grid[i - dir][j + 1];
                 }
@@ -41,9 +39,9 @@ function draw() {
                 if (below === 0) {
                     nextGrid[i][j + 1] = 1;
                 } else if (belowA === 0) {
-                    grid[i + dir][j + 1] = 1;
+                    nextGrid[i + dir][j + 1] = 1;
                 } else if (belowB === 0) {
-                    grid[i - dir][j + 1] = 1;
+                    nextGrid[i - dir][j + 1] = 1;
                 } else {
                     nextGrid[i][j] = 1;
                 }
@@ -54,7 +52,7 @@ function draw() {
     grid = nextGrid;
 }
 
-function mouseClicked() {
+function mouseDragged() {
     let col = floor(mouseX / w);
     let row = floor(mouseY / w);
     if (col >= 0 && col <= cols -1 && row >= 0 && row <= rows -1) {
