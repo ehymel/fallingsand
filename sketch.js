@@ -1,5 +1,5 @@
 let grid;
-let w = 10;
+let w = 5;
 let cols, rows;
 
 function setup() {
@@ -11,23 +11,15 @@ function setup() {
 
 function draw() {
     background(0);
+    drawGrid();
+    fall();
+}
 
-    for (let i = 0; i < cols; i++) {
-        for (let j = 0; j < rows; j++) {
-            stroke(255);
-            fill(grid[i][j] * 255);
-            let x = i * w;
-            let y = j * w;
-            square(x, y, w);
-        }
-    }
-
+function fall() {
     let nextGrid = make2DArray(cols, rows);
     for (let i = 0; i < cols; i++) {
         for (let j = 0; j < rows; j++) {
-            let state = grid[i][j];
-            if (state === 1) {
-                let below = grid[i][j + 1];
+            if (1 === grid[i][j]) {
                 let belowA, belowB;
                 let dir = random([-1, 1]);
 
@@ -36,7 +28,7 @@ function draw() {
                     belowB = grid[i - dir][j + 1];
                 }
 
-                if (below === 0) {
+                if (0 === grid[i][j + 1]) {
                     nextGrid[i][j + 1] = 1;
                 } else if (belowA === 0) {
                     nextGrid[i + dir][j + 1] = 1;
@@ -50,6 +42,18 @@ function draw() {
     }
 
     grid = nextGrid;
+}
+
+function drawGrid() {
+    for (let i = 0; i < cols; i++) {
+        for (let j = 0; j < rows; j++) {
+            stroke(255);
+            fill(grid[i][j] * 255);
+            let x = i * w;
+            let y = j * w;
+            square(x, y, w);
+        }
+    }
 }
 
 function mouseDragged() {
