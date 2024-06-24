@@ -23,8 +23,10 @@ function fall() {
                 let belowA, belowB;
                 let dir = random([-1, 1]);
 
-                if (i + dir >= 0 && i - dir >= 0 && i + dir <= cols - 1 && i - dir <= cols -1) {
+                if (i + dir >= 0 && i + dir <= cols - 1) {
                     belowA = grid[i + dir][j + 1];
+                }
+                if (i - dir >= 0 && i - dir <= cols -1) {
                     belowB = grid[i - dir][j + 1];
                 }
 
@@ -45,13 +47,17 @@ function fall() {
 }
 
 function drawGrid() {
+    background(0);
+
     for (let i = 0; i < cols; i++) {
         for (let j = 0; j < rows; j++) {
-            stroke(255);
-            fill(grid[i][j] * 255);
-            let x = i * w;
-            let y = j * w;
-            square(x, y, w);
+            noStroke();
+            if (grid[i][j] === 1) {
+                fill(255);
+                let x = i * w;
+                let y = j * w;
+                square(x, y, w);
+            }
         }
     }
 }
