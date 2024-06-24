@@ -1,5 +1,5 @@
 let grid, emptyGrid;
-let w = 10;
+let w = 5;
 let cols, rows;
 let fallingGrains = [];
 
@@ -94,24 +94,20 @@ function fall() {
 }
 
 function drawGrid() {
+    background(0);
+    noStroke();
     for (let i = 0; i < cols; i++) {
         for (let j = 0; j < rows; j++) {
-            let grainColor;
-            if (null === grid[i][j]) {
-                grainColor = 0;
-            } else {
+            if (null !== grid[i][j]) {
                 grain = grid[i][j];
-                grainColor = grain.getColor();
+                fill(grain.getColor());
+                square(i * w, j * w, w);
             }
-
-            stroke(255);
-            fill(grainColor);
-            square(i * w, j * w, w);
         }
     }
 }
 
-function mouseClicked() {
+function mouseDragged() {
     let col = floor(mouseX / w);
     let row = floor(mouseY / w);
     if (col >= 0 && col <= cols -1 && row >= 0 && row <= rows -1 && grid[col][row] === null) {
