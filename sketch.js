@@ -1,10 +1,12 @@
-let grid, emptyGrid;
+let grid, nextGrid;
 let w = 5;
 let cols, rows;
 let fallingGrains = [];
+let hueValue = 0;
 
 function setup() {
-    createCanvas(400, 400);
+    createCanvas(600, 800);
+    colorMode(HSB, 360, 255, 255);
     cols = width / w;
     rows = height / w;
     grid = make2DArray(cols, rows);
@@ -19,21 +21,20 @@ function draw() {
 
 function grainsFall() {
     let nextFallingGrains = [];
-    let nextGrid = grid;
+    nextGrid = grid;
     for (let i = 0; i < fallingGrains.length; i++) {
         let grain = fallingGrains[i];
         let x = grain.locationX;
         let y = grain.locationY;
 
         if (y === rows - 1) {
+            grain.land();
             continue;
         }
 
         let below = nextGrid[x][y + 1];
-        if (null === below) {
-            ++grain.locationY;
-            nextGrid[x][y] = null;
-            nextGrid[x][y + 1] = grain;
+        if (null === below || below.isFalling) {
+            grain.fall(x);
             nextFallingGrains.push(grain);
             continue;
         }
@@ -47,49 +48,16 @@ function grainsFall() {
         }
 
         if (null === belowA) {
-            grain.locationX = x + dir;
-            grain.locationY = y + 1;
-            nextGrid[x][y] = null;
-            nextGrid[x + dir][y + 1] = grain;
+            grain.fall(x + dir);
             nextFallingGrains.push(grain);
         } else if (null === belowB) {
-            grain.locationX = x - dir;
-            grain.locationY = y + 1;
-            nextGrid[x][y] = null;
-            nextGrid[x - dir][y + 1] = grain;
+            grain.fall(x - dir);
             nextFallingGrains.push(grain);
+        } else {
+            grain.land();
         }
     }
     fallingGrains = nextFallingGrains;
-    grid = nextGrid;
-}
-
-function fall() {
-    let nextGrid = make2DArray(cols, rows);
-    for (let i = 0; i < cols; i++) {
-        for (let j = 0; j < rows; j++) {
-            if (1 === grid[i][j]) {
-                let belowA, belowB;
-                let dir = random([-1, 1]);
-
-                if (i + dir >= 0 && i - dir >= 0 && i + dir <= cols - 1 && i - dir <= cols -1) {
-                    belowA = grid[i + dir][j + 1];
-                    belowB = grid[i - dir][j + 1];
-                }
-
-                if (0 === grid[i][j + 1]) {
-                    nextGrid[i][j + 1] = 1;
-                } else if (belowA === 0) {
-                    nextGrid[i + dir][j + 1] = 1;
-                } else if (belowB === 0) {
-                    nextGrid[i - dir][j + 1] = 1;
-                } else {
-                    nextGrid[i][j] = 1;
-                }
-            }
-        }
-    }
-
     grid = nextGrid;
 }
 
@@ -100,7 +68,7 @@ function drawGrid() {
         for (let j = 0; j < rows; j++) {
             if (null !== grid[i][j]) {
                 grain = grid[i][j];
-                fill(grain.getColor());
+                fill(grain.hueValue, 255, 255);
                 square(i * w, j * w, w);
             }
         }
@@ -108,13 +76,26 @@ function drawGrid() {
 }
 
 function mouseDragged() {
-    let col = floor(mouseX / w);
-    let row = floor(mouseY / w);
-    if (col >= 0 && col <= cols -1 && row >= 0 && row <= rows -1 && grid[col][row] === null) {
-        grain = new Grain(col, row);
-        fallingGrains.push(grain);
-        grid[col][row] = grain;
+    let radius = 5;
+    let extent = floor(radius / 2);
+    let mouseCol = floor(mouseX / w);
+    let mouseRow = floor(mouseY / w);
+
+    for (let i = -extent; i < extent; i++) {
+        for (let j = -extent; j < extent; j++) {
+            if (random(1) < 0.6) {
+                let col = mouseCol + i;
+                let row = mouseRow + j;
+
+                if (col >= 0 && col <= cols -1 && row >= 0 && row <= rows -1 && grid[col][row] === null) {
+                    grain = new Grain(col, row);
+                    fallingGrains.push(grain);
+                    grid[col][row] = grain;
+                }
+            }
+        }
     }
+    hueValue = (hueValue + 2) % 360;
 }
 
 function make2DArray(cols, rows) {
@@ -132,9 +113,22 @@ class Grain {
     constructor(i, j) {
         this.locationX = i;
         this.locationY = j;
+        this.hueValue = hueValue;
+        this.isFalling = true;
     }
 
-    getColor() {
-        return 'rgba(255, 255, 255, 1)';
+    fall(newLocationX) {
+        nextGrid[this.locationX][this.locationY] = null;
+
+        this.locationX = newLocationX;
+        this.locationY += 1;
+        this.isFalling = true;  // redundant, but keep for clarity
+
+        nextGrid[this.locationX][this.locationY] = this;
+    }
+
+    land() {
+        nextGrid[this.locationX][this.locationY] = this;
+        this.isFalling = false;
     }
 }
