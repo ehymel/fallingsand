@@ -1,6 +1,7 @@
-let grid;
-let w = 5;
+let grid, emptyGrid;
+let w = 10;
 let cols, rows;
+let fallingGrains = [];
 
 function setup() {
     createCanvas(400, 400);
@@ -12,7 +13,55 @@ function setup() {
 function draw() {
     background(0);
     drawGrid();
-    fall();
+    // fall();
+    grainsFall();
+}
+
+function grainsFall() {
+    let nextFallingGrains = [];
+    let nextGrid = grid;
+    for (let i = 0; i < fallingGrains.length; i++) {
+        let grain = fallingGrains[i];
+        let x = grain.locationX;
+        let y = grain.locationY;
+
+        if (y === rows - 1) {
+            continue;
+        }
+
+        let below = nextGrid[x][y + 1];
+        if (null === below) {
+            ++grain.locationY;
+            nextGrid[x][y] = null;
+            nextGrid[x][y + 1] = grain;
+            nextFallingGrains.push(grain);
+            continue;
+        }
+
+        let belowA, belowB;
+        let dir = random([-1, 1]);
+
+        if (x + dir >= 0 && x - dir >= 0 && x + dir <= cols - 1 && x - dir <= cols -1) {
+            belowA = nextGrid[x + dir][y + 1];
+            belowB = nextGrid[x - dir][y + 1];
+        }
+
+        if (null === belowA) {
+            grain.locationX = x + dir;
+            grain.locationY = y + 1;
+            nextGrid[x][y] = null;
+            nextGrid[x + dir][y + 1] = grain;
+            nextFallingGrains.push(grain);
+        } else if (null === belowB) {
+            grain.locationX = x - dir;
+            grain.locationY = y + 1;
+            nextGrid[x][y] = null;
+            nextGrid[x - dir][y + 1] = grain;
+            nextFallingGrains.push(grain);
+        }
+    }
+    fallingGrains = nextFallingGrains;
+    grid = nextGrid;
 }
 
 function fall() {
@@ -47,20 +96,28 @@ function fall() {
 function drawGrid() {
     for (let i = 0; i < cols; i++) {
         for (let j = 0; j < rows; j++) {
+            let grainColor;
+            if (null === grid[i][j]) {
+                grainColor = 0;
+            } else {
+                grain = grid[i][j];
+                grainColor = grain.getColor();
+            }
+
             stroke(255);
-            fill(grid[i][j] * 255);
-            let x = i * w;
-            let y = j * w;
-            square(x, y, w);
+            fill(grainColor);
+            square(i * w, j * w, w);
         }
     }
 }
 
-function mouseDragged() {
+function mouseClicked() {
     let col = floor(mouseX / w);
     let row = floor(mouseY / w);
-    if (col >= 0 && col <= cols -1 && row >= 0 && row <= rows -1) {
-        grid[col][row] = 1;
+    if (col >= 0 && col <= cols -1 && row >= 0 && row <= rows -1 && grid[col][row] === null) {
+        grain = new Grain(col, row);
+        fallingGrains.push(grain);
+        grid[col][row] = grain;
     }
 }
 
@@ -69,8 +126,19 @@ function make2DArray(cols, rows) {
     for (let i = 0; i < arr.length; i++) {
         arr[i] = new Array(rows);
         for (let j = 0; j < arr[i].length; j++) {
-            arr[i][j] = 0;
+            arr[i][j] = null;
         }
     }
     return arr;
+}
+
+class Grain {
+    constructor(i, j) {
+        this.locationX = i;
+        this.locationY = j;
+    }
+
+    getColor() {
+        return 'rgba(255, 255, 255, 1)';
+    }
 }
