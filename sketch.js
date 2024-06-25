@@ -75,7 +75,7 @@ function mouseDragged() {
             if (random(1) < 0.6) {
                 let col = mouseCol + i;
                 let row = mouseRow + j;
-                if (col >= 0 && col <= cols -1 && row >= 0 && row <= rows -1) {
+                if (col >= 0 && col <= cols -1 && row >= 0 && row <= rows -1 && grid[col][row] === 0) {
                     grid[col][row] = hueValue;
                 }
             }
