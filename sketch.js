@@ -32,7 +32,7 @@ function grainsFall() {
             continue;
         }
 
-        let below = nextGrid[x][y + 1];
+        let below = grid[x][y + 1];
         if (null === below || below.isFalling) {
             grain.fall(x);
             nextFallingGrains.push(grain);
@@ -43,8 +43,8 @@ function grainsFall() {
         let dir = random([-1, 1]);
 
         if (x + dir >= 0 && x - dir >= 0 && x + dir <= cols - 1 && x - dir <= cols -1) {
-            belowA = nextGrid[x + dir][y + 1];
-            belowB = nextGrid[x - dir][y + 1];
+            belowA = grid[x + dir][y + 1];
+            belowB = grid[x - dir][y + 1];
         }
 
         if (null === belowA) {
