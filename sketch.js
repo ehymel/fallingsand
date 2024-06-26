@@ -3,7 +3,6 @@ let w = 5;
 let cols, rows;
 let hueValue = 0;
 let partitions = [];
-let partitionRows = [];
 
 function setup() {
     createCanvas(600, 800);
@@ -12,9 +11,6 @@ function setup() {
     rows = height / w;
     grid = make2DArray(cols, rows);
     partitions = [new Partition(rows / 3, 3), new Partition(2 * rows / 3, 4)];
-    for (let i = 0; i < partitions.length; i++) {
-        partitionRows.push(partitions[i].row);
-    }
 }
 
 function draw() {
@@ -34,8 +30,12 @@ function fall() {
                     continue;
                 }
 
-                // if below is a partition, then we've landed
-                if (partitionRows.indexOf(j + 1) >= 0) {
+                // if below is a partition, then we may have landed
+                let landed = false;
+                for (let k = 0; k < partitions.length; k++) {
+                    landed = landed || partitions[k].checkLanding(i, j + 1);
+                }
+                if (landed) {
                     nextGrid[i][j] = grid[i][j];
                     continue;
                 }
@@ -154,5 +154,13 @@ class Partition {
             }
         }
         return holeCols;
+    }
+
+    checkLanding(col, row) {
+        if (row === this.row) {
+            return this.holeCols.indexOf(col) < 0;
+        }
+
+        return false;
     }
 }
