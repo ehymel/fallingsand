@@ -2,7 +2,8 @@ let grid;
 let w = 5;
 let cols, rows;
 let hueValue = 0;
-let partitionY;
+let partitions = [];
+let partitionRows = [];
 
 function setup() {
     createCanvas(600, 800);
@@ -10,7 +11,10 @@ function setup() {
     cols = width / w;
     rows = height / w;
     grid = make2DArray(cols, rows);
-    partitionY = floor(rows / 2);
+    partitions = [new Partition(rows / 3, 3), new Partition(2 * rows / 3, 4)];
+    for (let i = 0; i < partitions.length; i++) {
+        partitionRows.push(partitions[i].row);
+    }
 }
 
 function draw() {
@@ -24,8 +28,14 @@ function fall() {
     for (let i = 0; i < cols; i++) {
         for (let j = 0; j < rows; j++) {
             if (grid[i][j] > 0) {
-                // if below is a partition (or the bottom), then we've landed
-                if (partitionY === j + 1 || rows === j + 1) {
+                // if below bottom, then we've landed
+                if (j + 1 === rows) {
+                    nextGrid[i][j] = grid[i][j];
+                    continue;
+                }
+
+                // if below is a partition, then we've landed
+                if (partitionRows.indexOf(j + 1) >= 0) {
                     nextGrid[i][j] = grid[i][j];
                     continue;
                 }
@@ -65,10 +75,9 @@ function fall() {
 
 function drawGrid() {
     background(0);
-
-    stroke(255);
-    strokeWeight(3);
-    line(0, partitionY * w, (cols - 1) * w, partitionY * w);
+    for (let i = 0; i < partitions.length; i++) {
+        partitions[i].draw();
+    }
 
     for (let i = 0; i < cols; i++) {
         for (let j = 0; j < rows; j++) {
@@ -112,4 +121,38 @@ function make2DArray(cols, rows) {
         }
     }
     return arr;
+}
+
+class Partition {
+    constructor(row, holes) {
+        this.row = floor(row);
+        this.holes = holes;
+        this.holeSize = 4;
+        this.segmentLength = floor((cols - (this.holeSize * this.holes)) / (this.holes + 1));
+        this.holeCols = this.holePositions();
+    }
+
+    draw() {
+        stroke(255);
+        strokeWeight(w / 2);
+
+        for (let i = 0; i <= this.holes; i++) {
+            let segmentStart = i * (this.segmentLength + this.holeSize);
+            let segmentEnd = segmentStart + this.segmentLength;
+            line(segmentStart * w, this.row * w, segmentEnd * w, this.row * w);
+        }
+    }
+
+    holePositions() {
+        let holeCols = [];
+        // return col numbers of each hole
+        for (let i = 1; i <= this.holes; i++) {
+            let holeStart = i * this.segmentLength;
+            let holeEnd = holeStart + this.holeSize;
+            for (let j = holeStart; j < holeEnd; j++) {
+                holeCols.push(j);
+            }
+        }
+        return holeCols;
+    }
 }
