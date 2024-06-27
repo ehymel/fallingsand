@@ -10,7 +10,10 @@ function setup() {
     cols = width / w;
     rows = height / w;
     grid = make2DArray(cols, rows);
-    partitions = [new Partition(rows / 3, 3), new Partition(2 * rows / 3, 4)];
+    partitions = [
+        new Partition(rows / 3, 3),
+        new Partition(2 * rows / 3, 6)
+    ];
 }
 
 function draw() {
@@ -128,8 +131,10 @@ class Partition {
         this.row = floor(row);
         this.holes = holes;
         this.holeSize = 4;
-        this.segmentLength = floor((cols - (this.holeSize * this.holes)) / (this.holes + 1));
+        this.segmentLength = ceil((cols - (this.holeSize * this.holes)) / (this.holes + 1));
         this.holeCols = this.holePositions();
+        this.speed = random(0.1, 0.5);
+        this.start = 0;
     }
 
     draw() {
@@ -137,10 +142,16 @@ class Partition {
         strokeWeight(w / 2);
 
         for (let i = 0; i <= this.holes; i++) {
-            let segmentStart = i * (this.segmentLength + this.holeSize);
+            let segmentStart = this.start + i * (this.segmentLength + this.holeSize);
             let segmentEnd = segmentStart + this.segmentLength;
+
+            if (segmentStart > cols) {
+                //
+            }
             line(segmentStart * w, this.row * w, segmentEnd * w, this.row * w);
         }
+
+        this.start += this.speed;
     }
 
     holePositions() {
