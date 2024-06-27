@@ -146,8 +146,8 @@ class Partition {
     holePositions() {
         let holeCols = [];
         // return col numbers of each hole
-        for (let i = 1; i <= this.holes; i++) {
-            let holeStart = i * this.segmentLength;
+        for (let i = 0; i <= this.holes; i++) {
+            let holeStart = this.segmentLength + i * (this.segmentLength + this.holeSize);
             let holeEnd = holeStart + this.holeSize;
             for (let j = holeStart; j < holeEnd; j++) {
                 holeCols.push(j);
