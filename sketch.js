@@ -132,7 +132,7 @@ class Partition {
         this.holes = holes;
         this.holeSize = 4;
         this.segmentLength = ceil((cols - (this.holeSize * this.holes)) / (this.holes + 1));
-        this.holeCols = this.holePositions();
+        this.holeCols = [];
         this.speed = random(0.1, 0.5);
         this.start = 0;
     }
@@ -140,31 +140,30 @@ class Partition {
     draw() {
         stroke(255);
         strokeWeight(w / 2);
+        this.holeCols = [];
 
         for (let i = 0; i <= this.holes; i++) {
-            let segmentStart = this.start + i * (this.segmentLength + this.holeSize);
-            let segmentEnd = segmentStart + this.segmentLength;
-
-            if (segmentStart > cols) {
-                //
+            if (this.start > this.holeSize) {
+                let segmentStart = 0;
+                let segmentEnd = this.start - this.holeSize;
+                line(segmentStart * w, this.row * w, segmentEnd * w, this.row * w);
+                for (let j = 1; j <= this.holeSize; j++) {
+                    this.holeCols.push(round(segmentEnd + j, 0));
+                }
             }
+
+            let segmentStart = this.start + (this.segmentLength + this.holeSize) * i;
+            let segmentEnd = min(segmentStart + this.segmentLength, cols);
             line(segmentStart * w, this.row * w, segmentEnd * w, this.row * w);
+            for (let j = 1; j <= this.holeSize; j++) {
+                this.holeCols.push(round(segmentEnd + j, 0));
+            }
         }
 
         this.start += this.speed;
-    }
-
-    holePositions() {
-        let holeCols = [];
-        // return col numbers of each hole
-        for (let i = 0; i <= this.holes; i++) {
-            let holeStart = this.segmentLength + i * (this.segmentLength + this.holeSize);
-            let holeEnd = holeStart + this.holeSize;
-            for (let j = holeStart; j < holeEnd; j++) {
-                holeCols.push(j);
-            }
+        if (this.start > this.segmentLength + this.holeSize) {
+            this.start = 0;
         }
-        return holeCols;
     }
 
     checkLanding(col, row) {
