@@ -133,27 +133,42 @@ class Partition {
         this.holeSize = 4;
         this.segmentLength = ceil((cols - (this.holeSize * this.holes)) / (this.holes + 1));
         this.holeCols = [];
-        this.speed = random(0.1, 0.5);
+        this.speed = random(-0.5, 0.5);
         this.start = 0;
+        this.totalLength = this.segmentLength * (this.holes + 1) + this.holeSize * this.holes;
     }
 
     draw() {
         stroke(255);
         strokeWeight(w / 2);
         this.holeCols = [];
+        let segmentStart, segmentEnd;
 
         for (let i = 0; i <= this.holes; i++) {
             if (this.start > this.holeSize) {
-                let segmentStart = 0;
-                let segmentEnd = this.start - this.holeSize;
+                segmentStart = 0;
+                segmentEnd = this.start - this.holeSize;
                 line(segmentStart * w, this.row * w, segmentEnd * w, this.row * w);
                 for (let j = 1; j <= this.holeSize; j++) {
                     this.holeCols.push(round(segmentEnd + j, 0));
                 }
             }
 
-            let segmentStart = this.start + (this.segmentLength + this.holeSize) * i;
-            let segmentEnd = min(segmentStart + this.segmentLength, cols);
+            if (this.start < 0) {
+                if (this.start + this.segmentLength >= - this.holeSize) {
+                    segmentStart = cols + this.start + this.holeSize + (this.totalLength - cols);
+                } else {
+                    segmentStart = cols + this.start;
+                }
+                segmentEnd = cols;
+                line(segmentStart * w, this.row * w, segmentEnd * w, this.row * w);
+                for (let j = 1; j <= this.holeSize; j++) {
+                    this.holeCols.push(round(segmentStart - this.holeSize + j, 0));
+                }
+            }
+
+            segmentStart = this.start + (this.segmentLength + this.holeSize) * i;
+            segmentEnd = min(segmentStart + this.segmentLength, cols);
             line(segmentStart * w, this.row * w, segmentEnd * w, this.row * w);
             for (let j = 1; j <= this.holeSize; j++) {
                 this.holeCols.push(round(segmentEnd + j, 0));
@@ -161,7 +176,7 @@ class Partition {
         }
 
         this.start += this.speed;
-        if (this.start > this.segmentLength + this.holeSize) {
+        if (this.start > this.segmentLength + this.holeSize || this.start < -1 * (this.segmentLength + this.holeSize)) {
             this.start = 0;
         }
     }
